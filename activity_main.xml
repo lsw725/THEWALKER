@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.hp.mobilestudioproject.MainActivity">
+
+    <TextView
+        android:id="@+id/count_point"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="POINT - 000"
+        android:padding="8dp"
+        android:gravity="center"
+        android:background="#939393"
+        android:textColor="#FFFFFF"/>
+    <Button
+        android:id="@+id/status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|bottom"
+        android:text=" 정  보 "
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="8dp" />
+    <Button
+        android:id="@+id/friends"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|bottom"
+        android:text=" 친 구 목 록 "
+        android:layout_marginBottom="8dp"/>
+    <Button
+        android:id="@+id/logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right|bottom"
+        android:text=" 로 그 아 웃 "
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"/>
+
+</FrameLayout>
