@@ -12,7 +12,7 @@ import android.util.Log
 
 class StepCheckService : Service(), SensorEventListener {
 
-    internal var count = StepValue.step
+    private var count = StepValue.step
     private var lastTime: Long = 0
     private var speed: Float = 0.toFloat()
     private var lastX: Float = 0.toFloat()
@@ -33,7 +33,7 @@ class StepCheckService : Service(), SensorEventListener {
         accelerometerSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     } // end of onCreate
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         Log.i("onStartCommand", "IN")
         if (accelerometerSensor != null) {

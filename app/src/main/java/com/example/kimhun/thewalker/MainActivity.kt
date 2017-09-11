@@ -40,11 +40,10 @@ class MainActivity : Activity() {
         playingBtn!!.setOnClickListener {
             if (flag) {
                 // TODO Auto-generated method stub
+
                 playingBtn!!.text = "Go !!"
                 try {
-
                     val mainFilter = IntentFilter("make.a.yong.manbo")
-
                     registerReceiver(receiver, mainFilter)
                     startService(manboService)
                     Toast.makeText(applicationContext, "Playing game", Toast.LENGTH_SHORT).show()
@@ -79,7 +78,8 @@ class MainActivity : Activity() {
         }
 
         infoBtn!!.setOnClickListener{
-            var intent : Intent = Intent(this, InfoActivity::class.java);
+            var intent : Intent = Intent(this, InfoActivity::class.java)
+            intent.putExtra("point",serviceData)
             startActivity(intent);
         }
 
@@ -100,13 +100,18 @@ class MainActivity : Activity() {
 
     }
 
+    public override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
+        stopService(manboService)
+    }
+
     private inner class PlayingReceiver : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
             Log.i("PlayignReceiver", "IN")
             serviceData = intent.getStringExtra("stepService")
             countText!!.text = serviceData
-
 
         }
     }

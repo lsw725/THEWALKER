@@ -1,10 +1,9 @@
 package com.example.kimhun.thewalker
 
+import android.app.Activity
 import android.os.Bundle
-import android.support.v7.app.ActionBarActivity
-import com.example.kimhun.thewalker.R
 
-class FriendsActivity : ActionBarActivity() {
+class FriendsActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
