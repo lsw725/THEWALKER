@@ -100,12 +100,6 @@ class MainActivity : Activity() {
 
     }
 
-    public override fun onDestroy() {
-        super.onDestroy()
-        unregisterReceiver(receiver)
-        stopService(manboService)
-    }
-
     private inner class PlayingReceiver : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
