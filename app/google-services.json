@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "243065653634",
+    "firebase_url": "https://thewalker-9d145.firebaseio.com",
+    "project_id": "thewalker-9d145",
+    "storage_bucket": "thewalker-9d145.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243065653634:android:68f68174f19e58d2",
+        "android_client_info": {
+          "package_name": "com.example.kimhun.thewalker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "243065653634-rg111t17pagh4rgrlnucftlikt345aag.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kimhun.thewalker",
+            "certificate_hash": "ce0c49d04b37d4ab98636a7cde16df9c2cb6ff87"
+          }
+        },
+        {
+          "client_id": "243065653634-ge44pmc9bcsjuavd4kjtvhbum6iq9vs1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5akNxB_KPV1efxroV2-WqP2HOTXmqqEU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "243065653634-ge44pmc9bcsjuavd4kjtvhbum6iq9vs1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
