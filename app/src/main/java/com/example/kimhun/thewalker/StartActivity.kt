@@ -18,18 +18,27 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+
 
 class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener, View.OnClickListener{
+
+    //private lateinit var callbackManager : CallbackManager
 
     private val RC_SIGN_IN = 9001
     private val TAG = "StartAcitivty"
 
-    private var mAuth: FirebaseAuth? = null
+    private lateinit var mAuth: FirebaseAuth
     private lateinit var mGoogleApiClient: GoogleApiClient
+    private lateinit var database : DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //FacebookSdk.sdkInitialize(this.applicationContext)
+
         setContentView(R.layout.activity_start)
+
 
         findViewById(R.id.sign_in_button).setOnClickListener(this)
 
@@ -58,6 +67,7 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         super.onActivityResult(requestCode, resultCode, data)
+        //callbackManager.onActivityResult(requestCode, resultCode, data)
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
@@ -95,11 +105,21 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     private fun signIn() {
         val signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient)
         startActivityForResult(signInIntent, RC_SIGN_IN)
+
+
     }
     // [END signin]
 
     private fun updateUI(user: FirebaseUser?) {
         if (user != null) {
+
+            val currentUser = mAuth.currentUser
+            val userId = currentUser!!.email
+            var index = userId!!.indexOf("@")
+            var path = userId.substring(0,index)
+            database = FirebaseDatabase.getInstance().reference
+            database.child("user").child(path).setValue(0)
+
             var intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()

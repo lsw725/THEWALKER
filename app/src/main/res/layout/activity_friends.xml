@@ -27,7 +27,13 @@
             android:layout_marginBottom="8dp"
             android:layout_below="@id/title_friends"/>
     </RelativeLayout>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="추가할 친구 아이디를 입력하세요."
+        android:id="@+id/add_friends"/>
     <Button
+        android:id="@+id/addFriend"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
