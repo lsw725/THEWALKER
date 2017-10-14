@@ -10,6 +10,9 @@ import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+
+
 
 
 class MainActivity : Activity() {
@@ -80,23 +83,20 @@ class MainActivity : Activity() {
         infoBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, InfoActivity::class.java)
             intent.putExtra("point",serviceData)
-            startActivity(intent);
+            startActivity(intent)
         }
 
         buddyBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, FriendsActivity::class.java);
-            startActivity(intent);
+            startActivity(intent)
         }
 
         outBtn!!.setOnClickListener{
-
+            FirebaseAuth.getInstance().signOut()
+            var intent : Intent = Intent(this, StartActivity::class.java)
+            startActivity(intent)
+            finish()
         }
-
-
-
-
-
-
 
     }
 

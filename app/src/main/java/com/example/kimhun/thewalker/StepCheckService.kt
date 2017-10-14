@@ -66,7 +66,7 @@ class StepCheckService : Service(), SensorEventListener {
                 y = event.values[1]
                 z = event.values[2]
 
-                speed = Math.abs(x + y + z - lastX - lastY - lastZ) / gabOfTime * 50000
+                speed = Math.abs(x + y + z - lastX - lastY - lastZ) / gabOfTime * 12000
 
                 if (speed > SHAKE_THRESHOLD) {
                     Log.i("onSensorChanged_IF", "SECOND_IF_IN")
