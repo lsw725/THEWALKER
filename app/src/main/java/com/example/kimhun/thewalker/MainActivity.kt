@@ -79,7 +79,7 @@ class MainActivity : Activity() {
 
                     stopService(manboService)
                     Toast.makeText(applicationContext, "Stop", Toast.LENGTH_SHORT).show()
-                    database.child("user").child(path).setValue(countText!!.text.toString())
+                    database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
 
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
                 } catch (e: Exception) {
@@ -95,7 +95,7 @@ class MainActivity : Activity() {
 
         infoBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, InfoActivity::class.java)
-            intent.putExtra("point",serviceData)
+            intent.putExtra("point",(serviceData.toInt() + point.toString().toInt()).toString())
             startActivity(intent)
         }
 
@@ -133,13 +133,14 @@ class MainActivity : Activity() {
     private inner class PlayingReceiver : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
+
+            val pointDB = FirebaseDatabase.getInstance().getReference("/user")
+            pointDB.addListenerForSingleValueEvent(postListener)
+
             Log.i("PlayignReceiver", "IN")
             serviceData = intent.getStringExtra("stepService")
             countText!!.text = (serviceData.toInt() + point.toString().toInt()).toString()
             Log.i("test", serviceData + " " + point.toString())
-
-            val pointDB = FirebaseDatabase.getInstance().getReference("/user")
-            pointDB.addListenerForSingleValueEvent(postListener)
 
         }
     }

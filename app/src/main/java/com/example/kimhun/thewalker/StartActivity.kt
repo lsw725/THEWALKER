@@ -91,6 +91,14 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(ContentValues.TAG, "signInWithCredential:success")
                         val user = mAuth!!.currentUser
+
+                        val currentUser = mAuth.currentUser
+                        val userId = currentUser!!.email
+                        var index = userId!!.indexOf("@")
+                        var path = userId.substring(0,index)
+                        database = FirebaseDatabase.getInstance().reference
+                        database.child("user").child(path).setValue(0)
+
                         updateUI(user)
                     } else {
                         // If sign in fails, display a message to the user.
@@ -112,13 +120,6 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
 
     private fun updateUI(user: FirebaseUser?) {
         if (user != null) {
-
-            val currentUser = mAuth.currentUser
-            val userId = currentUser!!.email
-            var index = userId!!.indexOf("@")
-            var path = userId.substring(0,index)
-            database = FirebaseDatabase.getInstance().reference
-            database.child("user").child(path).setValue(0)
 
             var intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
