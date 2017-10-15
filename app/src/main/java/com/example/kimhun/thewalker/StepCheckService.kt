@@ -31,7 +31,9 @@ class StepCheckService : Service(), SensorEventListener {
         Log.i("onCreate", "IN")
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometerSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
     } // end of onCreate
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -66,7 +68,7 @@ class StepCheckService : Service(), SensorEventListener {
                 y = event.values[1]
                 z = event.values[2]
 
-                speed = Math.abs(x + y + z - lastX - lastY - lastZ) / gabOfTime * 12000
+                speed = Math.abs(x + y + z - lastX - lastY - lastZ) / gabOfTime * 10000
 
                 if (speed > SHAKE_THRESHOLD) {
                     Log.i("onSensorChanged_IF", "SECOND_IF_IN")
@@ -74,9 +76,10 @@ class StepCheckService : Service(), SensorEventListener {
 
                     StepValue.step = count++
 
-                    val msg = (StepValue.step / 2).toString() + ""
-                    myFilteredResponse.putExtra("stepService", msg)
 
+
+                    val msg = (StepValue.step * 10 / 2).toString() + ""
+                    myFilteredResponse.putExtra("stepService", msg)
                     sendBroadcast(myFilteredResponse)
                 } // end of if
 
@@ -100,3 +103,4 @@ class StepCheckService : Service(), SensorEventListener {
         private val SHAKE_THRESHOLD = 800
     }
 }
+
