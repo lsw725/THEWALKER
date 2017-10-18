@@ -3,10 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/THEWALKER.iml" filepath="$PROJECT_DIR$/THEWALKER.iml" />
-      <module fileurl="file://C:\Users\Hp\AndroidStudioProjects\THEWALKER_Jun\THEWALKER.iml" filepath="C:\Users\Hp\AndroidStudioProjects\THEWALKER_Jun\THEWALKER.iml" />
-      <module fileurl="file://C:\Users\kimhun\AndroidStudioProjects\THEWALKER\THEWALKER_Jun.iml" filepath="C:\Users\kimhun\AndroidStudioProjects\THEWALKER\THEWALKER_Jun.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://C:\Users\Hp\AndroidStudioProjects\THEWALKER_Jun\app\app.iml" filepath="C:\Users\Hp\AndroidStudioProjects\THEWALKER_Jun\app\app.iml" />
     </modules>
   </component>
 </project>
