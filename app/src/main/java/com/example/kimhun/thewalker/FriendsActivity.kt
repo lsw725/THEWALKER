@@ -41,7 +41,8 @@ class FriendsActivity : Activity() {
 
         friendsBtn = findViewById(R.id.addFriend) as Button
         friendsBtn.setOnClickListener{
-            database.child("friends").child(path).push().setValue(friendsID.text.toString())
+
+            database.child("friends").child(path).child(friendsID.text.toString()).setValue(friendsID.text.toString())
             friendsID.setText("")
         }
     }
