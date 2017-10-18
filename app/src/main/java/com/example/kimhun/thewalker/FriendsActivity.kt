@@ -55,15 +55,17 @@ class FriendsActivity : Activity() {
 
                 }
             }
-            for(ite in 1..userArray.size) {
-                Log.d("FriendsActivity", "userArray:" + userArray[ite-1])
-            }
+
             var currentRef = FirebaseDatabase.getInstance().getReference("/user")
             currentRef.addListenerForSingleValueEvent(postListener)
             for(user in userArray) {
-                if (user == friendsID.text.toString()) {
+                if (friendsID.text.toString() == path) {
+                    Log.w("FriendsActivity", "Don't add self for friend")
+                    break
+                } else if(user == friendsID.text.toString()) {
                     database.child("friends").child(path).child(friendsID.text.toString()).setValue(friendsID.text.toString())
                     friendsID.setText("")
+                    break
                 } else {
                     Log.w("FriendsActivity","failed order")
                 }
