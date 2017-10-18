@@ -61,6 +61,7 @@ class FriendsActivity : Activity() {
             for(user in userArray) {
                 if (friendsID.text.toString() == path) {
                     Log.w("FriendsActivity", "Don't add self for friend")
+                    friendsID.setText("")
                     break
                 } else if(user == friendsID.text.toString()) {
                     database.child("friends").child(path).child(friendsID.text.toString()).setValue(friendsID.text.toString())
@@ -68,6 +69,7 @@ class FriendsActivity : Activity() {
                     break
                 } else {
                     Log.w("FriendsActivity","failed order")
+                    friendsID.setText("")
                 }
             }
         }
