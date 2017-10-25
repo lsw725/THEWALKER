@@ -2,12 +2,12 @@ package com.example.kimhun.thewalker
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 
 class FriendsActivity : Activity() {
 
@@ -29,7 +29,7 @@ class FriendsActivity : Activity() {
         val userId = currentUser!!.email
         var index = userId!!.indexOf("@")
         var path = userId.substring(0,index)
-
+        var userArray = ArrayList<String>()
 
         database = FirebaseDatabase.getInstance().reference
 
@@ -41,9 +41,37 @@ class FriendsActivity : Activity() {
 
         friendsBtn = findViewById(R.id.addFriend) as Button
         friendsBtn.setOnClickListener{
+            val postListener = object : ValueEventListener {
+                override fun onDataChange(dataSnapshot : DataSnapshot?) {
+                    userArray.clear()
+                    for(snapshot in dataSnapshot!!.children) {
+                        var order = snapshot.key
+                        Log.d("FriendsActivity","Order :" + order.toString())
+                        userArray.add(order.toString())
+                    }
+                }
 
-            database.child("friends").child(path).child(friendsID.text.toString()).setValue(friendsID.text.toString())
-            friendsID.setText("")
+                override fun onCancelled(dataSnapshot: DatabaseError?) {
+
+                }
+            }
+
+            var currentRef = FirebaseDatabase.getInstance().getReference("/user")
+            currentRef.addListenerForSingleValueEvent(postListener)
+            for(user in userArray) {
+                if (friendsID.text.toString() == path) {
+                    Log.w("FriendsActivity", "Don't add self for friend")
+                    friendsID.setText("")
+                    break
+                } else if(user == friendsID.text.toString()) {
+                    database.child("friends").child(path).child(friendsID.text.toString()).setValue(friendsID.text.toString())
+                    friendsID.setText("")
+                    break
+                } else {
+                    Log.w("FriendsActivity","failed order")
+                    friendsID.setText("")
+                }
+            }
         }
     }
 }
