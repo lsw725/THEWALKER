@@ -26,6 +26,7 @@
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="point"
             android:textSize = "30sp"
             android:id = "@+id/point"
             android:layout_margin="30dp"/>
@@ -85,11 +86,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="일일 최대 걸음 수"/>
+                    android:text="일일 최대 걸음 수" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/day_max"/>
+                    android:id="@+id/day_max" />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
