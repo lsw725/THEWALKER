@@ -2,6 +2,7 @@ package com.example.kimhun.thewalker
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -17,6 +18,7 @@ class FriendsActivity : Activity() {
     private lateinit var friendsID : EditText
     private lateinit var database : DatabaseReference
     private lateinit var mAuth: FirebaseAuth
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,25 +37,6 @@ class FriendsActivity : Activity() {
         var friendsArray = ArrayList<String>()
 
         database = FirebaseDatabase.getInstance().reference
-
-        val friendsListener = object : ValueEventListener{
-            override fun onDataChange(dataSnapshot : DataSnapshot?) {
-                friendsArray.clear()
-                for(snapshot in dataSnapshot!!.children) {
-                    var order = snapshot.key
-                    friendsArray.add(order.toString())
-                    Log.d("helpme",order.toString())
-                    adapter.addItem(1,order.toString(),1)
-                }
-            }
-
-            override fun onCancelled(dataSnapshot: DatabaseError?) {
-
-            }
-        }
-
-        var currentFriendRef = FirebaseDatabase.getInstance().getReference("/friends/" + path)
-        currentFriendRef.addListenerForSingleValueEvent(friendsListener)
 
         friendsBtn = findViewById(R.id.addFriend) as Button
         friendsBtn.setOnClickListener{
@@ -89,6 +72,9 @@ class FriendsActivity : Activity() {
                     database.child("friends").child(path).child(friendsID.text.toString()).setValue(friendsID.text.toString())
                     Toast.makeText(this, "친구추가가 완료됐습니다.",Toast.LENGTH_SHORT)
                     friendsID.setText("")
+                    var intent = Intent(this, FriendsActivity::class.java)
+                    startActivity(intent)
+                    finish()
                     break
                 } else {
                     if(user == userArray[userArray.size - 1]){
@@ -102,6 +88,28 @@ class FriendsActivity : Activity() {
                 }
             }
         }
+
+        val friendsListener = object : ValueEventListener{
+            override fun onDataChange(dataSnapshot : DataSnapshot?) {
+                friendsArray.clear()
+                for(snapshot in dataSnapshot!!.children) {
+                    var order = snapshot.key
+                    friendsArray.add(order.toString())
+                    Log.d("helpme",order.toString())
+                    adapter.addItem(order.toString())
+                }
+            }
+
+            override fun onCancelled(dataSnapshot: DatabaseError?) {
+
+            }
+        }
+
+        var currentFriendRef = FirebaseDatabase.getInstance().getReference("/friends/" + path)
+        currentFriendRef.addListenerForSingleValueEvent(friendsListener)
+
+
+
         friendsListView.adapter = adapter
     }
 }

@@ -97,7 +97,7 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                         var index = userId!!.indexOf("@")
                         var path = userId.substring(0,index)
                         database = FirebaseDatabase.getInstance().reference
-                        database.child("user").child(path).setValue(0)
+                        database.child("friends").child(path).child(path).setValue(path)
 
                         updateUI(user)
                     } else {

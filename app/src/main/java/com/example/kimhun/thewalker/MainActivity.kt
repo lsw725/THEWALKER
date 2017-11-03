@@ -19,7 +19,7 @@ class MainActivity : Activity() {
     private var manboService: Intent? = null
     private var receiver: BroadcastReceiver? = null
     private var flag = true
-    private var serviceData: String = ""
+    private var serviceData: String = "0"
     private var countText: TextView? = null
     private var playingBtn: Button? = null
     private var infoBtn: Button? = null
@@ -95,7 +95,7 @@ class MainActivity : Activity() {
 
         infoBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, InfoActivity::class.java)
-            intent.putExtra("point",(serviceData.toInt() + point.toString().toInt()).toString())
+            intent.putExtra("point", countText!!.text)
             startActivity(intent)
         }
 
