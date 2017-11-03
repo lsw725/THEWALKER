@@ -12,6 +12,8 @@ import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MainActivity : Activity() {
@@ -29,6 +31,10 @@ class MainActivity : Activity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var path:String
 
+    // 날짜를 위한 포맷
+    private val simpleFormat = SimpleDateFormat("yyyy-MM-dd",Locale.KOREA)
+
+    private var dailyPt: Int = 0
     private var point:Any = 0
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,13 +50,34 @@ class MainActivity : Activity() {
         buddyBtn = findViewById(R.id.friends) as Button
         outBtn = findViewById(R.id.logout) as Button
 
-        database = FirebaseDatabase.getInstance().reference
+        // 날짜의 관한 변수
+        var cal  = Calendar.getInstance()
+        var today = cal.time
+        var todayStr = simpleFormat.format(today)
+        cal.add(Calendar.DAY_OF_WEEK,1)
+        var tomorrow = cal.time
+        var tomorrowStr = simpleFormat.format(tomorrow)
+        cal.add(Calendar.DAY_OF_WEEK,-1)
+        Log.d("MainActivity", "today: $todayStr tomorrow: $tomorrowStr ")
 
+        database = FirebaseDatabase.getInstance().reference
         mAuth = FirebaseAuth.getInstance()
         val currentUser = mAuth.currentUser
         val userId = currentUser!!.email
         var index = userId!!.indexOf("@")
         path = userId.substring(0,index)
+
+        val pointDB = FirebaseDatabase.getInstance().getReference("/user")
+        pointDB.addListenerForSingleValueEvent(postListener)
+
+        // 오늘 쌓은 점수
+        if(todayStr == tomorrowStr) {
+            cal.add(Calendar.DAY_OF_WEEK,1)
+            tomorrow = cal.time
+            tomorrowStr = simpleFormat.format(tomorrow)
+            cal.add(Calendar.DAY_OF_WEEK,-1)
+            dailyPt = 0
+        }
 
         playingBtn!!.setOnClickListener {
             if (flag) {
@@ -80,13 +107,13 @@ class MainActivity : Activity() {
                     stopService(manboService)
                     Toast.makeText(applicationContext, "Stop", Toast.LENGTH_SHORT).show()
                     database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
-
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
                 } catch (e: Exception) {
                     // TODO: handle exception
                     Toast.makeText(applicationContext, e.message,
                             Toast.LENGTH_LONG).show()
                 }
+
 
             }
 
@@ -96,6 +123,7 @@ class MainActivity : Activity() {
         infoBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, InfoActivity::class.java)
             intent.putExtra("point", countText!!.text)
+            intent.putExtra("dailyPt", (dailyPt-5).toString()) // 처음 인식은 0걸음 이므로 -5로 보정
             startActivity(intent)
         }
 
@@ -139,9 +167,9 @@ class MainActivity : Activity() {
 
             Log.i("PlayignReceiver", "IN")
             serviceData = intent.getStringExtra("stepService")
+            dailyPt += intent.getIntExtra("scorePerStep",-1)
             countText!!.text = (serviceData.toInt() + point.toString().toInt()).toString()
-            Log.i("test", serviceData + " " + point.toString())
-
+            Log.i("test", "$serviceData $point $dailyPt")
         }
     }
 

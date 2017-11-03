@@ -70,7 +70,7 @@ class FriendsActivity : Activity() {
                     break
                 } else if(user == friendsID.text.toString()) {
                     database.child("friends").child(path).child(friendsID.text.toString()).setValue(friendsID.text.toString())
-                    Toast.makeText(this, "친구추가가 완료됐습니다.",Toast.LENGTH_SHORT)
+                    Toast.makeText(this, "친구추가가 완료됐습니다.",Toast.LENGTH_SHORT).show()
                     friendsID.setText("")
                     var intent = Intent(this, FriendsActivity::class.java)
                     startActivity(intent)
