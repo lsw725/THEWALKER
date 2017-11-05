@@ -10,6 +10,7 @@ import com.google.firebase.database.*
 
 class InfoActivity : Activity() {
     private var pointText : TextView? = null
+    private lateinit var database : DatabaseReference
     private lateinit var mAuth: FirebaseAuth
     private lateinit var path:String
     private var point:Any = 0
