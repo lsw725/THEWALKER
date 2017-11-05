@@ -35,7 +35,7 @@ class MainActivity : Activity() {
     // 날짜를 위한 포맷
     private val simpleFormat = SimpleDateFormat("yyyy-MM-dd",Locale.KOREA)
 
-    private var dailyPt: Any = 0
+    private var dailyPt: Int = 0
     private var point:Any = 0
     private var savedTodayStr : String = "0000-00-00"
 
@@ -59,44 +59,6 @@ class MainActivity : Activity() {
         val userId = currentUser!!.email
         var index = userId!!.indexOf("@")
         path = userId.substring(0,index)
-
-        // 날짜의 관한 변수
-        var cal  = Calendar.getInstance()
-        var today = cal.time
-        var todayStr = simpleFormat.format(today)
-
-        Log.d("MainActivity", "today: $todayStr")
-
-        //날이 넘어가는 거 체크
-        val dailyDataDB = FirebaseDatabase.getInstance().getReference("/info/" + path)
-        dailyDataDB.addListenerForSingleValueEvent(dailyDataListener)
-
-        val todayYear = todayStr.substring(0,todayStr.indexOf("-"))
-        val todayMonth = todayStr.substring(5,todayStr.indexOf("-",5))
-        val todayDate = todayStr.substring(8)
-
-        var savedTodayYear = savedTodayStr.substring(0,savedTodayStr.indexOf("-"))
-        var savedTodayMonth = savedTodayStr.substring(5,savedTodayStr.indexOf("-",5))
-        var savedTodayDate = savedTodayStr.substring(8)
-
-        if(todayDate.toInt() > savedTodayDate.toInt()) {
-            Log.i("MainActivity","nextday!  " + todayDate.toInt().toString() + "  " + savedTodayDate.toInt())
-            database.child("info").child(path).child("dailyPt").setValue(0)
-        } else {
-            if (todayDate.toInt() < savedTodayDate.toInt() && todayMonth.toInt() > savedTodayMonth.toInt()) {
-                database.child("info").child(path).child("dailyPt").setValue(0)
-            } else {
-                if(todayDate.toInt() < savedTodayDate.toInt() && todayMonth.toInt() < savedTodayMonth.toInt() && todayYear.toInt() > savedTodayYear.toInt()) {
-                    database.child("info").child(path).child("dailyPt").setValue(0)
-                }
-            }
-        }
-
-        database.child("info").child(path).child("today").setValue(todayStr)
-
-        savedTodayYear = savedTodayStr.substring(0,savedTodayStr.indexOf("-"))
-        savedTodayMonth = savedTodayStr.substring(5,savedTodayStr.indexOf("-",5))
-        savedTodayDate = savedTodayStr.substring(8)
 
         playingBtn!!.setOnClickListener {
             if (flag) {
@@ -126,28 +88,6 @@ class MainActivity : Activity() {
                     stopService(manboService)
                     Toast.makeText(applicationContext, "Stop", Toast.LENGTH_SHORT).show()
                     database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
-                    database.child("info").child(path).child("dailyPt").setValue(serviceData.toInt() + dailyPt.toString().toInt())
-
-                    //날이 넘어가는 거 체크
-                    if(todayDate.toInt() > savedTodayDate.toInt()) {
-                        Log.i("MainActivity","nextday!  " + todayDate.toInt().toString() + "  " + savedTodayDate.toInt())
-                        database.child("info").child(path).child("dailyPt").setValue(0)
-                    } else {
-                        if (todayDate.toInt() < savedTodayDate.toInt() && todayMonth.toInt() > savedTodayMonth.toInt()) {
-                            database.child("info").child(path).child("dailyPt").setValue(0)
-                        } else {
-                            if(todayDate.toInt() < savedTodayDate.toInt() && todayMonth.toInt() < savedTodayMonth.toInt() && todayYear.toInt() > savedTodayYear.toInt()) {
-                                database.child("info").child(path).child("dailyPt").setValue(0)
-                            }
-                        }
-                    }
-
-                    database.child("info").child(path).child("today").setValue(todayStr)
-                    Log.d("dayday", " " + todayStr)
-
-                    savedTodayYear = savedTodayStr.substring(0,savedTodayStr.indexOf("-"))
-                    savedTodayMonth = savedTodayStr.substring(5,savedTodayStr.indexOf("-",5))
-                    savedTodayDate = savedTodayStr.substring(8)
 
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
                 } catch (e: Exception) {
@@ -165,7 +105,7 @@ class MainActivity : Activity() {
         infoBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, InfoActivity::class.java)
             intent.putExtra("point", countText!!.text)
-            intent.putExtra("dailyPt", (serviceData.toInt() + dailyPt.toString().toInt()).toString())
+            intent.putExtra("dailyPt", (dailyPt - 5).toString())
             startActivity(intent)
         }
 
@@ -200,22 +140,6 @@ class MainActivity : Activity() {
         }
     }
 
-    val dailyDataListener = object: ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot?) {
-            for(snapshot in dataSnapshot!!.children) {
-                if(snapshot.key == "dailyPt") {
-                    dailyPt = snapshot.value!!
-                } else if (snapshot.key == "today") {
-
-                    savedTodayStr = snapshot.value!!.toString()
-                    Log.d("dailyDataListener","is it run?  " + savedTodayStr)
-                }
-            }
-        }
-        override fun onCancelled(p0: DatabaseError?) {
-
-        }
-    }
 
     private inner class PlayingReceiver : BroadcastReceiver() {
 
@@ -224,13 +148,9 @@ class MainActivity : Activity() {
             val pointDB = FirebaseDatabase.getInstance().getReference("/user")
             pointDB.addListenerForSingleValueEvent(postListener)
 
-            val dailyPtDB = FirebaseDatabase.getInstance().getReference("/info/" + path)
-            dailyPtDB.addListenerForSingleValueEvent(dailyDataListener)
-            Log.d("OnReceive","dailyPt: $dailyPt")
-
             Log.i("PlayignReceiver", "IN")
             serviceData = intent.getStringExtra("stepService")
-            dailyPt = serviceData.toInt() + dailyPt.toString().toInt()
+            dailyPt += intent.getIntExtra("scorePerStep", -1)
             countText!!.text = (serviceData.toInt() + point.toString().toInt()).toString()
             Log.i("test", "$serviceData $point $dailyPt")
         }
