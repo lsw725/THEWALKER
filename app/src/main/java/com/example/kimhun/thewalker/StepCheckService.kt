@@ -79,6 +79,8 @@ class StepCheckService : Service(), SensorEventListener {
 
 
                     val msg = (StepValue.step * 10 / 2).toString() + ""
+                    val scorePerStep = 5
+                    myFilteredResponse.putExtra("scorePerStep", scorePerStep)
                     myFilteredResponse.putExtra("stepService", msg)
                     sendBroadcast(myFilteredResponse)
                 } // end of if
