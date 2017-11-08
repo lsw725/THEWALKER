@@ -41,7 +41,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="오늘의 획득 점수!!"/>
+                    android:text="접속 후 획득 점수!!"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="오늘의 걸음 수"/>
+                    android:text="접속 후 걸음 수"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -67,7 +67,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="오늘의 소모 칼로리"/>
+                    android:text="접속 후 소모 칼로리"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
