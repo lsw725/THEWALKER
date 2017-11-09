@@ -31,18 +31,37 @@ class MainActivity : Activity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var path:String
 
-
-    // 날짜를 위한 포맷
-    private val simpleFormat = SimpleDateFormat("yyyy-MM-dd",Locale.KOREA)
-
     private var dailyPt: Int = 0
     private var point:Any = 0
-    private var savedTodayStr : String = "0000-00-00"
 
+    // 날짜 관련 변수
+    private var simpleDateFormat : SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd  HH:mm:ss")
+
+    private var now : Long = 0
+    private lateinit var today : Date
+    private lateinit var tomorrow : Date
+
+    // 날짜 관련 함수
+    fun getDate() : String {
+        now = System.currentTimeMillis()
+        today = Date(now)
+        tomorrow = Date(now+(1000*60*60*24)*+1)
+        val todayStr = simpleDateFormat.format(today)
+        val tomorrowStr = simpleDateFormat.format(tomorrow)
+        Log.d("haha","today: " + todayStr + " tomorrow: " + tomorrowStr)
+        return today.toString()
+    }
+
+    fun isNextDay() : Boolean {
+        return (today.compareTo(tomorrow) == 0)
+    }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        getDate()
+        Log.d("haha","answer: " + isNextDay().toString())
 
         manboService = Intent(this, StepCheckService::class.java)
         receiver = PlayingReceiver()
@@ -52,6 +71,8 @@ class MainActivity : Activity() {
         infoBtn = findViewById(R.id.status) as Button
         buddyBtn = findViewById(R.id.friends) as Button
         outBtn = findViewById(R.id.logout) as Button
+
+
 
         database = FirebaseDatabase.getInstance().reference
         mAuth = FirebaseAuth.getInstance()
@@ -139,7 +160,6 @@ class MainActivity : Activity() {
 
         }
     }
-
 
     private inner class PlayingReceiver : BroadcastReceiver() {
 
