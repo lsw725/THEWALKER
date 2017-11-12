@@ -34,18 +34,24 @@ class MainActivity : Activity() {
     private var dailyPt: Int = 0
     private var point:Any = 0
 
+    // info접근 db레퍼런스
+    var DBinfoRef = FirebaseDatabase.getInstance().getReference("/info")
+
     // 날짜 관련 변수
     private var simpleDateFormat : SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd  HH:mm:ss")
 
     private var now : Long = 0
     private lateinit var today : Date
-    private lateinit var tomorrow : Date
+    private var tomorrow : Date? = null
 
     // 날짜 관련 함수
     fun getDate() : String {
         now = System.currentTimeMillis()
         today = Date(now)
-        tomorrow = Date(now+(1000*60*60*24)*+1)
+        DBinfoRef.addValueEventListener(tomorrowListener)
+        if(tomorrow == null) {
+            tomorrow = Date(now+(1000*60*60*24)*+1)
+        }
         val todayStr = simpleDateFormat.format(today)
         val tomorrowStr = simpleDateFormat.format(tomorrow)
         Log.d("haha","today: " + todayStr + " tomorrow: " + tomorrowStr)
@@ -59,9 +65,6 @@ class MainActivity : Activity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        getDate()
-        Log.d("haha","answer: " + isNextDay().toString())
 
         manboService = Intent(this, StepCheckService::class.java)
         receiver = PlayingReceiver()
@@ -80,6 +83,10 @@ class MainActivity : Activity() {
         val userId = currentUser!!.email
         var index = userId!!.indexOf("@")
         path = userId.substring(0,index)
+
+        getDate()
+        Log.d("haha","today: " + today + " tomorrow: " + tomorrow)
+        Log.d("haha","answer: " + isNextDay().toString())
 
         playingBtn!!.setOnClickListener {
             if (flag) {
@@ -158,6 +165,21 @@ class MainActivity : Activity() {
         }
         override fun onCancelled(p0: DatabaseError?) {
 
+        }
+    }
+
+    val tomorrowListener = object : ValueEventListener{
+        override fun onDataChange(p0: DataSnapshot?) {
+            Log.d("haha","exists(): " + p0!!.exists())
+            if(p0.exists()) {
+                Log.d("addValueEventListener", "DB DATA: " + simpleDateFormat.format(p0?.getValue(Date::class.java)))
+                tomorrow = p0.getValue(Date::class.java)!!
+            } else {
+                tomorrow = Date(now+(1000*60*60*24)*+1)
+            }
+        }
+        override fun onCancelled(p0: DatabaseError?) {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
     }
 
