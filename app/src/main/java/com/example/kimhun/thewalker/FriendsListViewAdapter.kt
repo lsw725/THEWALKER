@@ -61,7 +61,7 @@ class FriendsListViewAdapter() : BaseAdapter() {
             var path = userId.substring(0,index)
 
             var alertDialogBuilder : AlertDialog.Builder = AlertDialog.Builder(view!!.context)
-            alertDialogBuilder.setMessage("친구를 삭제 하시겠습니까?").setCancelable(false).setPositiveButton("확인",
+            alertDialogBuilder.setMessage(friendsList[position].getFriendName() + "님을 삭제 하시겠습니까?").setCancelable(false).setPositiveButton("확인",
                     DialogInterface.OnClickListener { dialog, which ->
                         FirebaseDatabase.getInstance().getReference("/friends/" + path + "/" + friendsList[position].getFriendName()).removeValue()
                         var intent = Intent(view!!.context, FriendsActivity::class.java)

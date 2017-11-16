@@ -47,7 +47,7 @@ class InfoActivity : Activity() {
         val dailyPoint = findViewById(R.id.now_point) as TextView?
         dailyPoint!!.text = (dailyData + "pt")
         val dailyStep = findViewById(R.id.now_step) as TextView?
-        dailyStep!!.text = ((dailyData.toInt() / 5).toString() + "걸음")
+        dailyStep!!.text = ((dailyData.toInt() / 10).toString() + "걸음")
         val dailyCalorie = findViewById(R.id.now_calorie) as TextView?
         dailyCalorie!!.text = 0.toString()
 
