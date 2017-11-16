@@ -12,8 +12,10 @@ import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.logging.Handler
 
 
 class MainActivity : Activity() {
@@ -35,33 +37,47 @@ class MainActivity : Activity() {
     private var point:Any = 0
 
     // info접근 db레퍼런스
-    var DBinfoRef = FirebaseDatabase.getInstance().getReference("/info")
+    private lateinit var DBinfoRef : DatabaseReference
 
     // 날짜 관련 변수
-    private var simpleDateFormat : SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd  HH:mm:ss")
+    private val simpleDateFormat : SimpleDateFormat = SimpleDateFormat("yyyy.MM.dd.")
 
     private var now : Long = 0
     private lateinit var today : Date
-    private var tomorrow : Date? = null
+    private var savedDate : Date? = null
 
     // 날짜 관련 함수
     fun getDate() : String {
         now = System.currentTimeMillis()
         today = Date(now)
         DBinfoRef.addValueEventListener(tomorrowListener)
-        if(tomorrow == null) {
-            tomorrow = Date(now+(1000*60*60*24)*+1)
-        }
-        val todayStr = simpleDateFormat.format(today)
-        val tomorrowStr = simpleDateFormat.format(tomorrow)
-        Log.d("haha","today: " + todayStr + " tomorrow: " + tomorrowStr)
+        Timer().schedule(object : TimerTask(){
+            override fun run() {
+                val todayStr = simpleDateFormat.format(today)
+                val savedDateStr = simpleDateFormat.format(savedDate)
+                Log.d("haha","today: " + todayStr + " savedDate: " + savedDateStr)
+
+                Log.d("haha","isNextday: " + isNextday(today,savedDate))
+            }
+        }, 2500)
         return today.toString()
     }
+    fun isNextday( today: Date, savedToday : Date?) : Boolean {
+        if(savedToday == null) {
+            Log.d("haha","error!! savedToday is null: " + savedToday)
+            return false
+        }
+        val cal = Calendar.getInstance()
+        val formatter : DateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+        formatter.timeZone = cal.timeZone
 
-    fun isNextDay() : Boolean {
-        return (today.compareTo(tomorrow) == 0)
+        val compareToday = simpleDateFormat.parse(formatter.format(today))
+        val compareSavedToday = simpleDateFormat.parse(formatter.format(savedToday))
+        Log.d("haha","compareToday: " + compareToday.toString() + " compareSavedToday: " + compareSavedToday.toString())
+
+        Log.d("haha",compareToday.toString() + " " + compareSavedToday.toString() + " " + (compareToday > compareSavedToday).toString() + " " + (compareToday == compareSavedToday).toString() + " " + (compareToday < compareSavedToday).toString())
+        return compareToday > compareSavedToday
     }
-
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -75,8 +91,6 @@ class MainActivity : Activity() {
         buddyBtn = findViewById(R.id.friends) as Button
         outBtn = findViewById(R.id.logout) as Button
 
-
-
         database = FirebaseDatabase.getInstance().reference
         mAuth = FirebaseAuth.getInstance()
         val currentUser = mAuth.currentUser
@@ -84,9 +98,11 @@ class MainActivity : Activity() {
         var index = userId!!.indexOf("@")
         path = userId.substring(0,index)
 
+        DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path + "/today")
         getDate()
-        Log.d("haha","today: " + today + " tomorrow: " + tomorrow)
-        Log.d("haha","answer: " + isNextDay().toString())
+        Log.d("haha","today: " + today + " savedDate: " + savedDate)
+
+
 
         playingBtn!!.setOnClickListener {
             if (flag) {
@@ -116,6 +132,7 @@ class MainActivity : Activity() {
                     stopService(manboService)
                     Toast.makeText(applicationContext, "Stop", Toast.LENGTH_SHORT).show()
                     database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
+                    getDate()
 
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
                 } catch (e: Exception) {
@@ -172,14 +189,21 @@ class MainActivity : Activity() {
         override fun onDataChange(p0: DataSnapshot?) {
             Log.d("haha","exists(): " + p0!!.exists())
             if(p0.exists()) {
-                Log.d("addValueEventListener", "DB DATA: " + simpleDateFormat.format(p0?.getValue(Date::class.java)))
-                tomorrow = p0.getValue(Date::class.java)!!
+                val cal = Calendar.getInstance()
+                val formatter = DateFormat.getDateInstance()
+                formatter.timeZone = cal.timeZone
+                Log.d("haha","p0.value = " + p0.value.toString())
+                val dateStr = p0.value.toString()
+                savedDate = simpleDateFormat.parse(dateStr)
+                Log.d("haha", "savedDate: " + savedDate.toString())
             } else {
-                tomorrow = Date(now+(1000*60*60*24)*+1)
+                Log.d("haha", "today: " + today)
+                DBinfoRef.child(path).child("today").setValue(simpleDateFormat.format(today))
+                Log.d("haha", "today: " + today)
             }
         }
         override fun onCancelled(p0: DatabaseError?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
         }
     }
 
