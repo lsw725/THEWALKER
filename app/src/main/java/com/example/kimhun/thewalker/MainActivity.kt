@@ -12,8 +12,10 @@ import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.logging.Handler
 
 
 class MainActivity : Activity() {
@@ -31,15 +33,51 @@ class MainActivity : Activity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var path:String
 
-
-    // 날짜를 위한 포맷
-    private val simpleFormat = SimpleDateFormat("yyyy-MM-dd",Locale.KOREA)
-
     private var dailyPt: Int = 0
     private var point:Any = 0
-    private var savedTodayStr : String = "0000-00-00"
 
+    // info접근 db레퍼런스
+    private lateinit var DBinfoRef : DatabaseReference
 
+    // 날짜 관련 변수
+    private val simpleDateFormat : SimpleDateFormat = SimpleDateFormat("yyyy.MM.dd.")
+
+    private var now : Long = 0
+    private lateinit var today : Date
+    private var savedDate : Date? = null
+
+    // 날짜 관련 함수
+    fun getDate() : String {
+        now = System.currentTimeMillis()
+        today = Date(now)
+        DBinfoRef.addValueEventListener(tomorrowListener)
+        Timer().schedule(object : TimerTask(){
+            override fun run() {
+                val todayStr = simpleDateFormat.format(today)
+                val savedDateStr = simpleDateFormat.format(savedDate)
+                Log.d("haha","today: " + todayStr + " savedDate: " + savedDateStr)
+
+                Log.d("haha","isNextday: " + isNextday(today,savedDate))
+            }
+        }, 2500)
+        return today.toString()
+    }
+    fun isNextday( today: Date, savedToday : Date?) : Boolean {
+        if(savedToday == null) {
+            Log.d("haha","error!! savedToday is null: " + savedToday)
+            return false
+        }
+        val cal = Calendar.getInstance()
+        val formatter : DateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+        formatter.timeZone = cal.timeZone
+
+        val compareToday = simpleDateFormat.parse(formatter.format(today))
+        val compareSavedToday = simpleDateFormat.parse(formatter.format(savedToday))
+        Log.d("haha","compareToday: " + compareToday.toString() + " compareSavedToday: " + compareSavedToday.toString())
+
+        Log.d("haha",compareToday.toString() + " " + compareSavedToday.toString() + " " + (compareToday > compareSavedToday).toString() + " " + (compareToday == compareSavedToday).toString() + " " + (compareToday < compareSavedToday).toString())
+        return compareToday > compareSavedToday
+    }
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -59,6 +97,12 @@ class MainActivity : Activity() {
         val userId = currentUser!!.email
         var index = userId!!.indexOf("@")
         path = userId.substring(0,index)
+
+        DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path + "/today")
+        getDate()
+        Log.d("haha","today: " + today + " savedDate: " + savedDate)
+
+
 
         playingBtn!!.setOnClickListener {
             if (flag) {
@@ -88,6 +132,7 @@ class MainActivity : Activity() {
                     stopService(manboService)
                     Toast.makeText(applicationContext, "Stop", Toast.LENGTH_SHORT).show()
                     database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
+                    getDate()
 
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
                 } catch (e: Exception) {
@@ -140,6 +185,27 @@ class MainActivity : Activity() {
         }
     }
 
+    val tomorrowListener = object : ValueEventListener{
+        override fun onDataChange(p0: DataSnapshot?) {
+            Log.d("haha","exists(): " + p0!!.exists())
+            if(p0.exists()) {
+                val cal = Calendar.getInstance()
+                val formatter = DateFormat.getDateInstance()
+                formatter.timeZone = cal.timeZone
+                Log.d("haha","p0.value = " + p0.value.toString())
+                val dateStr = p0.value.toString()
+                savedDate = simpleDateFormat.parse(dateStr)
+                Log.d("haha", "savedDate: " + savedDate.toString())
+            } else {
+                Log.d("haha", "today: " + today)
+                DBinfoRef.child(path).child("today").setValue(simpleDateFormat.format(today))
+                Log.d("haha", "today: " + today)
+            }
+        }
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+    }
 
     private inner class PlayingReceiver : BroadcastReceiver() {
 

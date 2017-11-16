@@ -10,6 +10,7 @@ import android.hardware.SensorManager
 import android.os.IBinder
 import android.os.Vibrator
 import android.util.Log
+import java.util.*
 
 class StepCheckService : Service(), SensorEventListener {
 
@@ -58,6 +59,7 @@ class StepCheckService : Service(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent) {
         Log.i("onSensorChanged", "IN")
+
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             val currentTime = System.currentTimeMillis()
             val gabOfTime = currentTime - lastTime
