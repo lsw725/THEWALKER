@@ -8,6 +8,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.IBinder
+import android.os.Vibrator
 import android.util.Log
 
 class StepCheckService : Service(), SensorEventListener {
@@ -28,6 +29,7 @@ class StepCheckService : Service(), SensorEventListener {
 
     override fun onCreate() {
         super.onCreate()
+
         Log.i("onCreate", "IN")
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometerSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -68,7 +70,7 @@ class StepCheckService : Service(), SensorEventListener {
                 y = event.values[1]
                 z = event.values[2]
 
-                speed = Math.abs(x + y + z - lastX - lastY - lastZ) / gabOfTime * 10000
+                speed = (Math.abs(x - lastX) + Math.abs(y - lastY) + Math.abs(z - lastZ) )/ gabOfTime * 10000
 
                 if (speed > SHAKE_THRESHOLD) {
                     Log.i("onSensorChanged_IF", "SECOND_IF_IN")
@@ -76,6 +78,9 @@ class StepCheckService : Service(), SensorEventListener {
 
                     StepValue.step = count++
 
+
+                    var vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    vibrator.vibrate(100)
 
 
                     val msg = (StepValue.step * 10 / 2).toString() + ""
