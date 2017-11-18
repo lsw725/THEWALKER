@@ -57,7 +57,7 @@ class InfoActivity : Activity() {
         val totalPoint = findViewById(R.id.total_point) as TextView?
         totalPoint!!.text = (serviceData + " pt")
         val totalStep = findViewById(R.id.total_step) as TextView?
-        totalStep!!.text = ((serviceData.toInt() / 5).toString() + " 걸음")
+        totalStep!!.text = ((serviceData.toInt() / 10).toString() + " 걸음")
         val totalCalorie = findViewById(R.id.total_calorie) as TextView?
         totalCalorie!!.text = 0.toString()
     }
