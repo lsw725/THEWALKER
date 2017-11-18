@@ -15,7 +15,6 @@ import com.google.firebase.database.*
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.logging.Handler
 
 
 class MainActivity : Activity() {
@@ -33,7 +32,7 @@ class MainActivity : Activity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var path:String
 
-    private var dailyPt: Int = 0
+    private var dailyPt: Any = 0
     private var point:Any = 0
 
     // info접근 db레퍼런스
@@ -50,21 +49,26 @@ class MainActivity : Activity() {
     fun getDate() : String {
         now = System.currentTimeMillis()
         today = Date(now)
-        DBinfoRef.addValueEventListener(tomorrowListener)
+        DBinfoRef.child("today").addValueEventListener(dateListener)
         Timer().schedule(object : TimerTask(){
             override fun run() {
                 val todayStr = simpleDateFormat.format(today)
                 val savedDateStr = simpleDateFormat.format(savedDate)
-                Log.d("haha","today: " + todayStr + " savedDate: " + savedDateStr)
+                Log.d("getDate()","today: " + todayStr + " savedDate: " + savedDateStr)
 
-                Log.d("haha","isNextday: " + isNextday(today,savedDate))
+                if(isNextday(today,savedDate)) {
+                    dailyPt = 0
+                    DBinfoRef.child("dailyPt").setValue(0)
+                    DBinfoRef.child("today").setValue(todayStr)
+                }
+                //Log.d("haha","isNextday: " + isNextday(today,savedDate))
             }
         }, 2500)
         return today.toString()
     }
     fun isNextday( today: Date, savedToday : Date?) : Boolean {
         if(savedToday == null) {
-            Log.d("haha","error!! savedToday is null: " + savedToday)
+            Log.d("isNextday()","error!! savedToday is null: " + savedToday)
             return false
         }
         val cal = Calendar.getInstance()
@@ -73,9 +77,9 @@ class MainActivity : Activity() {
 
         val compareToday = simpleDateFormat.parse(formatter.format(today))
         val compareSavedToday = simpleDateFormat.parse(formatter.format(savedToday))
-        Log.d("haha","compareToday: " + compareToday.toString() + " compareSavedToday: " + compareSavedToday.toString())
+        Log.d("isNextday()","compareToday: " + compareToday.toString() + " compareSavedToday: " + compareSavedToday.toString())
 
-        Log.d("haha",compareToday.toString() + " " + compareSavedToday.toString() + " " + (compareToday > compareSavedToday).toString() + " " + (compareToday == compareSavedToday).toString() + " " + (compareToday < compareSavedToday).toString())
+        Log.d("isNextday()",compareToday.toString() + " " + compareSavedToday.toString() + " " + (compareToday > compareSavedToday).toString() + " " + (compareToday == compareSavedToday).toString() + " " + (compareToday < compareSavedToday).toString())
         return compareToday > compareSavedToday
     }
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,9 +102,9 @@ class MainActivity : Activity() {
         var index = userId!!.indexOf("@")
         path = userId.substring(0,index)
 
-        DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path + "/today")
+        DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
         getDate()
-        Log.d("haha","today: " + today + " savedDate: " + savedDate)
+        Log.d("onCreate()","today: " + today + " savedDate: " + savedDate)
 
 
 
@@ -132,6 +136,7 @@ class MainActivity : Activity() {
                     stopService(manboService)
                     Toast.makeText(applicationContext, "Stop", Toast.LENGTH_SHORT).show()
                     database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
+                    database.child("info").child(path).child("dailyPt").setValue(serviceData.toInt() + dailyPt.toString().toInt())
                     getDate()
 
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
@@ -150,7 +155,7 @@ class MainActivity : Activity() {
         infoBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, InfoActivity::class.java)
             intent.putExtra("point", countText!!.text)
-            intent.putExtra("dailyPt", (dailyPt - 5).toString())
+            intent.putExtra("dailyPt", (dailyPt.toString().toInt() + serviceData.toInt()).toString())
             startActivity(intent)
         }
 
@@ -185,23 +190,38 @@ class MainActivity : Activity() {
         }
     }
 
-    val tomorrowListener = object : ValueEventListener{
+    val dateListener = object : ValueEventListener{
         override fun onDataChange(p0: DataSnapshot?) {
-            Log.d("haha","exists(): " + p0!!.exists())
+            Log.d("dateListener","exists(): " + p0!!.exists())
             if(p0.exists()) {
                 val cal = Calendar.getInstance()
                 val formatter = DateFormat.getDateInstance()
                 formatter.timeZone = cal.timeZone
-                Log.d("haha","p0.value = " + p0.value.toString())
+                Log.d("dateListener","p0.value = " + p0.value.toString())
                 val dateStr = p0.value.toString()
                 savedDate = simpleDateFormat.parse(dateStr)
-                Log.d("haha", "savedDate: " + savedDate.toString())
+                Log.d("dateListener", "savedDate: " + savedDate.toString())
             } else {
-                Log.d("haha", "today: " + today)
-                DBinfoRef.child(path).child("today").setValue(simpleDateFormat.format(today))
-                Log.d("haha", "today: " + today)
+                Log.d("dateListener", "today: " + today)
+                DBinfoRef.child("today").setValue(simpleDateFormat.format(today))
             }
         }
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+    }
+
+    val dailyPtListener = object : ValueEventListener {
+        override fun onDataChange(p0: DataSnapshot?) {
+            if(p0 != null) {
+                if(p0.exists()) {
+                    dailyPt = p0.value!!
+                } else {
+                    DBinfoRef.child("dailyPt").setValue(0)
+                }
+            }
+        }
+
         override fun onCancelled(p0: DatabaseError?) {
 
         }
@@ -214,9 +234,10 @@ class MainActivity : Activity() {
             val pointDB = FirebaseDatabase.getInstance().getReference("/user")
             pointDB.addListenerForSingleValueEvent(postListener)
 
+            DBinfoRef.child("dailyPt").addListenerForSingleValueEvent(dailyPtListener)
+
             Log.i("PlayignReceiver", "IN")
             serviceData = intent.getStringExtra("stepService")
-            dailyPt += intent.getIntExtra("scorePerStep", -1)
             countText!!.text = (serviceData.toInt() + point.toString().toInt()).toString()
             Log.i("test", "$serviceData $point $dailyPt")
         }
