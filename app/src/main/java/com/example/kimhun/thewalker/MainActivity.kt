@@ -27,6 +27,7 @@ class MainActivity : Activity() {
     private var playingBtn: Button? = null
     private var infoBtn: Button? = null
     private var buddyBtn: Button? = null
+    private var shopBtn: Button? = null
     private var outBtn: Button? = null
     private lateinit var database : DatabaseReference
     private lateinit var mAuth: FirebaseAuth
@@ -34,6 +35,8 @@ class MainActivity : Activity() {
 
     private var dailyPt: Any = 0
     private var point:Any = 0
+    private var dayMaxPt: Any = 0
+    private var tall : Double = 0.0
 
     // info접근 db레퍼런스
     private lateinit var DBinfoRef : DatabaseReference
@@ -44,12 +47,15 @@ class MainActivity : Activity() {
     private var now : Long = 0
     private lateinit var today : Date
     private var savedDate : Date? = null
+    private lateinit var date:Any
+    private var dayCount : Int = 1
 
     // 날짜 관련 함수
     fun getDate() : String {
         now = System.currentTimeMillis()
         today = Date(now)
         DBinfoRef.child("today").addValueEventListener(dateListener)
+        DBinfoRef.child("dayMaxPt").addValueEventListener(dayMaxPtListener) // listener하나 더 늘림 => delay를 더 늘려야?? 시도해봐야함
         Timer().schedule(object : TimerTask(){
             override fun run() {
                 val todayStr = simpleDateFormat.format(today)
@@ -63,7 +69,7 @@ class MainActivity : Activity() {
                 }
                 //Log.d("haha","isNextday: " + isNextday(today,savedDate))
             }
-        }, 2500)
+        }, 4000)
         return today.toString()
     }
     fun isNextday( today: Date, savedToday : Date?) : Boolean {
@@ -93,6 +99,7 @@ class MainActivity : Activity() {
         playingBtn = findViewById(R.id.btnStopService) as Button
         infoBtn = findViewById(R.id.status) as Button
         buddyBtn = findViewById(R.id.friends) as Button
+        shopBtn = findViewById(R.id.shop) as Button
         outBtn = findViewById(R.id.logout) as Button
 
         database = FirebaseDatabase.getInstance().reference
@@ -102,11 +109,15 @@ class MainActivity : Activity() {
         var index = userId!!.indexOf("@")
         path = userId.substring(0,index)
 
+        val pointDB = FirebaseDatabase.getInstance().getReference("/user")
+        pointDB.addListenerForSingleValueEvent(postListener)
+        countText!!.text = point.toString()
+
         DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
         getDate()
         Log.d("onCreate()","today: " + today + " savedDate: " + savedDate)
-
-
+        val dateDB = FirebaseDatabase.getInstance().getReference("/info/" + path)
+        dateDB.addListenerForSingleValueEvent(dayCountListener)
 
         playingBtn!!.setOnClickListener {
             if (flag) {
@@ -137,6 +148,7 @@ class MainActivity : Activity() {
                     Toast.makeText(applicationContext, "Stop", Toast.LENGTH_SHORT).show()
                     database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
                     database.child("info").child(path).child("dailyPt").setValue(serviceData.toInt() + dailyPt.toString().toInt())
+                    database.child("info").child(path).child("dayMaxPt").setValue(dayMaxPt)
                     getDate()
 
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
@@ -156,11 +168,23 @@ class MainActivity : Activity() {
             var intent : Intent = Intent(this, InfoActivity::class.java)
             intent.putExtra("point", countText!!.text)
             intent.putExtra("dailyPt", (dailyPt.toString().toInt() + serviceData.toInt()).toString())
+            if((dailyPt.toString().toInt() + serviceData.toInt()) > dayMaxPt.toString().toInt()) {
+                intent.putExtra("dayMaxPt", (dailyPt.toString().toInt() + serviceData.toInt()).toString())
+                database.child("info").child(path).child("dayMaxPt").setValue(dailyPt.toString().toInt() + serviceData.toInt())
+            } else {
+                intent.putExtra("dayMaxPt", dayMaxPt.toString())
+            }
+            intent.putExtra("dayCount",dayCount.toString())
             startActivity(intent)
         }
 
         buddyBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, FriendsActivity::class.java);
+            startActivity(intent)
+        }
+
+        shopBtn!!.setOnClickListener{
+            var intent : Intent = Intent(this, ShopActivity::class.java);
             startActivity(intent)
         }
 
@@ -216,12 +240,62 @@ class MainActivity : Activity() {
             if(p0 != null) {
                 if(p0.exists()) {
                     dailyPt = p0.value!!
+                    if(dailyPt.toString().toInt() > dayMaxPt.toString().toInt()) dayMaxPt = dailyPt
                 } else {
                     DBinfoRef.child("dailyPt").setValue(0)
                 }
             }
         }
 
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+    }
+
+    val dayMaxPtListener = object : ValueEventListener {
+        override fun onDataChange(p0: DataSnapshot?) {
+            if(p0 != null) {
+                if(p0.exists()) {
+                    dayMaxPt = p0.value!!
+                } else {
+                    DBinfoRef.child("dayMaxPt").setValue(1)
+                }
+            }
+        }
+
+        override fun onCancelled(p0: DatabaseError?) {
+        }
+    }
+
+    val dayCountListener = object: ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot?) {
+            for(snapshot in dataSnapshot!!.children) {
+                if(snapshot.key == "startDay") {
+                    date = snapshot.value!!
+
+                    var now = System.currentTimeMillis()
+                    var today = Date(now)
+
+                    val cal = Calendar.getInstance()
+                    val formatter : DateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+                    formatter.timeZone = cal.timeZone
+
+                    val compareToday = simpleDateFormat.parse(formatter.format(today))
+                    val compareSavedToday = simpleDateFormat.parse(date.toString())
+
+                    val calDate = compareToday.time - compareSavedToday.time
+                    var calDateFinal = calDate / (24*60*60*1000)
+                    calDateFinal = Math.abs(calDateFinal)
+
+                    dayCount = calDateFinal.toInt() + 1
+                    Log.d("datedate1111", calDateFinal.toString())
+                    Log.d("datedatedate11111", compareToday.toString() + "  " + compareSavedToday.toString())
+                }
+
+                Log.d("FriendsActivity","ValueEventListener:" + point)
+
+            }
+        }
         override fun onCancelled(p0: DatabaseError?) {
 
         }
@@ -239,8 +313,10 @@ class MainActivity : Activity() {
             Log.i("PlayignReceiver", "IN")
             serviceData = intent.getStringExtra("stepService")
             countText!!.text = (serviceData.toInt() + point.toString().toInt()).toString()
+            //dailyPt = serviceData.toInt() + dailyPt.toString().toInt()
             Log.i("test", "$serviceData $point $dailyPt")
         }
     }
+
 
 }
