@@ -27,6 +27,14 @@
         </activity>
 
         <service
+            android:name=".StepCheckService"
+            android:enabled="true">
+        <intent-filter>
+            <action android:name="app.manbo.Service" />
+        </intent-filter>
+    </service>
+
+        <service
             android:name=".FirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
@@ -44,7 +52,7 @@
         <activity android:name=".InfoActivity" />
         <activity android:name=".FriendsActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".ShopActivity"></activity>
+        <activity android:name=".ShopActivity"/>
     </application>
 
 </manifest>
