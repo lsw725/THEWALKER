@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.iid.FirebaseInstanceId
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -91,6 +92,9 @@ class MainActivity : Activity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val token = FirebaseInstanceId.getInstance().token
+        Log.d("FCM_Token", token)
 
         manboService = Intent(this, StepCheckService::class.java)
         receiver = PlayingReceiver()
