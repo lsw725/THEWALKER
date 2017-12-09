@@ -20,6 +20,8 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener, View.OnClickListener{
@@ -32,6 +34,13 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     private lateinit var mAuth: FirebaseAuth
     private lateinit var mGoogleApiClient: GoogleApiClient
     private lateinit var database : DatabaseReference
+
+    // 날짜 관련 변수
+    private val simpleDateFormat : SimpleDateFormat = SimpleDateFormat("yyyy.MM.dd.")
+
+    private var now : Long = 0
+    private lateinit var today : Date
+    private lateinit var  todayStr : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +107,12 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                         var path = userId.substring(0,index)
                         database = FirebaseDatabase.getInstance().reference
                         database.child("friends").child(path).child(path).setValue(path)
+
+                        now = System.currentTimeMillis()
+                        today = Date(now)
+                        todayStr = simpleDateFormat.format(today)
+
+                        database.child("info").child(path).child("startDay").setValue(todayStr)
 
                         updateUI(user)
                     } else {
