@@ -52,8 +52,7 @@
         <activity android:name=".InfoActivity" />
         <activity android:name=".FriendsActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".ShopActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <activity android:name=".ShopActivity"/>
     </application>
 
 </manifest>

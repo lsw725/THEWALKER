@@ -129,7 +129,7 @@
             android:id="@+id/items_str"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="[ 아이템들 ]"
+            android:text="[ 아이템 ]"
             android:textSize="15sp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"/>

@@ -26,15 +26,16 @@ import java.util.*
 /**
  * Created by Hp on 2017-09-13.
  */
-class ItemsListViewAdapter() : BaseAdapter() {
-    private var itemsList = ArrayList<ItemsListItem>()
+class ItemsListViewAdapter(val context : Context?, val itemsList : ArrayList<ItemsListItem>) : BaseAdapter() {
+    //private var itemsList = ArrayList<ItemsListItem>()
 
     private lateinit var mAuth: FirebaseAuth
+    private var selectedPosition : Int = 0
 
     override fun getCount() = itemsList.size
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val context = parent?.context
+        //val context = parent?.context
         var view = convertView
 
         if(convertView == null) {
@@ -52,16 +53,20 @@ class ItemsListViewAdapter() : BaseAdapter() {
         val item = itemsList[position]
 
         // 위젯에 데이터 반영
-        shoesImageView.setImageDrawable(item.getItemImage())
-        nameTextView.text = item.getItemName()
-        costTextView.text = item.getItemCost().toString()
-        contextTextView.text = item.getItemContext()
+        shoesImageView.setImageDrawable(item.itemImage) //item.getItemImage()
+        nameTextView.text = item.itemName //item.getItemName()
+        costTextView.text = item.itemCost.toString() //item.getItemCost().toString()
+        contextTextView.text = item.itemContext //item.getItemContext()
         buyButton.setOnClickListener{
             mAuth = FirebaseAuth.getInstance()
             val currentUser = mAuth.currentUser
             val userId = currentUser!!.email
-            var index = userId!!.indexOf("@")
-            var path = userId.substring(0,index)
+            val index = userId!!.indexOf("@")
+            val path = userId.substring(0,index)
+            val DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
+
+            DBinfoRef.child("shoes").setValue(position)
+
             /*
             var alertDialogBuilder : AlertDialog.Builder = AlertDialog.Builder(view!!.context)
             alertDialogBuilder.setMessage(itemsList[position].getFriendName() + "님을 삭제 하시겠습니까?").setCancelable(false).setPositiveButton("확인",
@@ -92,13 +97,8 @@ class ItemsListViewAdapter() : BaseAdapter() {
         return position as Long
     }
 
-    fun addItem(image : Drawable, name : String, cost : Int, context : String) {
-        val item = ItemsListItem()
-
-        item.setItemImage(image)
-        item.setItemName(name)
-        item.setItemCost(cost)
-        item.setItemContext(context)
+    fun addItem(image : Drawable, name : String, cost : Int, context : String, ability : Int) {
+        val item = ItemsListItem(image,name,cost,context,ability)
 
         itemsList.add(item)
     }
