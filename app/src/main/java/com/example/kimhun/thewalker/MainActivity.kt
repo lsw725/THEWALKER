@@ -34,10 +34,15 @@ class MainActivity : Activity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var path:String
 
+    // 정보창 관련 변수
     private var dailyPt: Any = 0
     private var point:Any = 0
     private var dayMaxPt: Any = 0
     private var tall : Double = 0.0
+
+    // 상점 관련 변수
+    private var shoes : Int? = null
+    private var shoesAbility : Int? = ( (shoes ?: 0) + 1 ) * 10
 
     // info접근 db레퍼런스
     private lateinit var DBinfoRef : DatabaseReference
@@ -56,7 +61,7 @@ class MainActivity : Activity() {
         now = System.currentTimeMillis()
         today = Date(now)
         DBinfoRef.child("today").addValueEventListener(dateListener)
-        DBinfoRef.child("dayMaxPt").addValueEventListener(dayMaxPtListener) // listener하나 더 늘림 => delay를 더 늘려야?? 시도해봐야함
+        DBinfoRef.child("dayMaxPt").addValueEventListener(dayMaxPtListener)
         Timer().schedule(object : TimerTask(){
             override fun run() {
                 val todayStr = simpleDateFormat.format(today)
@@ -183,12 +188,13 @@ class MainActivity : Activity() {
         }
 
         buddyBtn!!.setOnClickListener{
-            var intent : Intent = Intent(this, FriendsActivity::class.java);
+            var intent : Intent = Intent(this, FriendsActivity::class.java)
             startActivity(intent)
         }
 
         shopBtn!!.setOnClickListener{
-            var intent : Intent = Intent(this, ShopActivity::class.java);
+            var intent : Intent = Intent(this, ShopActivity::class.java)
+            intent.putExtra("shoes",shoes)
             startActivity(intent)
         }
 
@@ -277,8 +283,8 @@ class MainActivity : Activity() {
                 if(snapshot.key == "startDay") {
                     date = snapshot.value!!
 
-                    var now = System.currentTimeMillis()
-                    var today = Date(now)
+                    val now = System.currentTimeMillis()
+                    val today = Date(now)
 
                     val cal = Calendar.getInstance()
                     val formatter : DateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
@@ -305,6 +311,16 @@ class MainActivity : Activity() {
         }
     }
 
+    val ItemListener = object : ValueEventListener {
+        override fun onDataChange(p0: DataSnapshot?) {
+
+        }
+
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+    }
+
     private inner class PlayingReceiver : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
@@ -315,9 +331,8 @@ class MainActivity : Activity() {
             DBinfoRef.child("dailyPt").addListenerForSingleValueEvent(dailyPtListener)
 
             Log.i("PlayignReceiver", "IN")
-            serviceData = intent.getStringExtra("stepService")
+            serviceData = (intent.getStringExtra("stepService").toDouble() * shoesAbility!!).toInt().toString()
             countText!!.text = (serviceData.toInt() + point.toString().toInt()).toString()
-            //dailyPt = serviceData.toInt() + dailyPt.toString().toInt()
             Log.i("test", "$serviceData $point $dailyPt")
         }
     }

@@ -80,14 +80,12 @@ class StepCheckService : Service(), SensorEventListener {
 
                     StepValue.step = count++
 
-
                     var vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                     vibrator.vibrate(100)
 
 
-                    val msg = (StepValue.step * 10 / 2).toString() + ""
-                    val scorePerStep = 5
-                    myFilteredResponse.putExtra("scorePerStep", scorePerStep)
+                    //val msg = (StepValue.step * 10 / 2).toString() + ""
+                    val msg = (StepValue.step.toDouble() / 2).toString() + ""
                     myFilteredResponse.putExtra("stepService", msg)
                     sendBroadcast(myFilteredResponse)
                 } // end of if
