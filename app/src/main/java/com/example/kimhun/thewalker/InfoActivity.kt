@@ -43,7 +43,9 @@ class InfoActivity : Activity() {
         pointDB.addListenerForSingleValueEvent(postListener)
 
         val serviceData : String = intent.getStringExtra("point")
+        val serviceStepData : String = intent.getStringExtra("step")
         val dailyData = intent.getStringExtra("dailyPt")
+        val dailyStepData = intent.getStringExtra("dailyStep")
         val dayMaxData = intent.getStringExtra("dayMaxPt")
         val dayCountData = intent.getStringExtra("dayCount")
 
@@ -56,7 +58,7 @@ class InfoActivity : Activity() {
         val dailyPoint = findViewById(R.id.now_point) as TextView?
         dailyPoint!!.text = (dailyData + "pt")
         val dailyStep = findViewById(R.id.now_step) as TextView?
-        dailyStep!!.text = ((dailyData.toInt() / 10).toString() + "걸음")
+        dailyStep!!.text = (dailyStepData + "걸음")
 
         val dayMaxPt = findViewById(R.id.day_max) as TextView?
         dayMaxPt!!.text = (dayMaxData + "pt")
@@ -64,7 +66,7 @@ class InfoActivity : Activity() {
         val totalPoint = findViewById(R.id.total_point) as TextView?
         totalPoint!!.text = (serviceData + " pt")
         val totalStep = findViewById(R.id.total_step) as TextView?
-        totalStep!!.text = ((serviceData.toInt() / 10).toString() + " 걸음")
+        totalStep!!.text = (serviceStepData + " 걸음")
         val dayAverage = findViewById(R.id.day_aver) as TextView?
         dayAverage!!.text = ((serviceData.toInt() / dayCountData.toInt()).toString() + " pt")
 

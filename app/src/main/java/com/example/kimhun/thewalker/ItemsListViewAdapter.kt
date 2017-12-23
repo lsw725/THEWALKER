@@ -27,8 +27,6 @@ import java.util.*
  * Created by Hp on 2017-09-13.
  */
 class ItemsListViewAdapter(val context : Context?, val itemsList : ArrayList<ItemsListItem>) : BaseAdapter() {
-    //private var itemsList = ArrayList<ItemsListItem>()
-
     private lateinit var mAuth: FirebaseAuth
     private var selectedPosition : Int = 0
 
@@ -66,6 +64,11 @@ class ItemsListViewAdapter(val context : Context?, val itemsList : ArrayList<Ite
             val DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
 
             DBinfoRef.child("shoes").setValue(position)
+            val intent = Intent(context,ShopActivity::class.java)
+            intent.putExtra("shoes",position)
+            (context as Activity).setResult(1,intent)
+            context.finish()
+            Log.d("shoes","shoesPosition is " + position)
 
             /*
             var alertDialogBuilder : AlertDialog.Builder = AlertDialog.Builder(view!!.context)

@@ -24,6 +24,7 @@ class MainActivity : Activity() {
     private var receiver: BroadcastReceiver? = null
     private var flag = true
     private var serviceData: String = "0"
+    private var serviceStepData : String = "0"
     private var countText: TextView? = null
     private var playingBtn: Button? = null
     private var infoBtn: Button? = null
@@ -38,11 +39,13 @@ class MainActivity : Activity() {
     private var dailyPt: Any = 0
     private var point:Any = 0
     private var dayMaxPt: Any = 0
-    private var tall : Double = 0.0
+    private var step:Any = 0
+    private var dailyStep:Any = 0
 
     // 상점 관련 변수
     private var shoes : Int? = null
     private var shoesAbility : Int? = ( (shoes ?: 0) + 1 ) * 10
+    private var money : Int = 0
 
     // info접근 db레퍼런스
     private lateinit var DBinfoRef : DatabaseReference
@@ -70,6 +73,7 @@ class MainActivity : Activity() {
 
                 if(isNextday(today,savedDate)) {
                     dailyPt = 0
+                    dailyStep = 0
                     DBinfoRef.child("dailyPt").setValue(0)
                     DBinfoRef.child("today").setValue(todayStr)
                 }
@@ -123,6 +127,8 @@ class MainActivity : Activity() {
         countText!!.text = point.toString()
 
         DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
+        DBinfoRef.child("shoes").addValueEventListener(ItemListener)
+        DBinfoRef.child("money").addValueEventListener(moneyListener)
         getDate()
         Log.d("onCreate()","today: " + today + " savedDate: " + savedDate)
         val dateDB = FirebaseDatabase.getInstance().getReference("/info/" + path)
@@ -158,6 +164,8 @@ class MainActivity : Activity() {
                     database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
                     database.child("info").child(path).child("dailyPt").setValue(serviceData.toInt() + dailyPt.toString().toInt())
                     database.child("info").child(path).child("dayMaxPt").setValue(dayMaxPt)
+                    DBinfoRef.child("step").setValue((serviceStepData.toDouble() + step.toString().toDouble()).toInt())
+                    DBinfoRef.child("dailyStep").setValue((serviceStepData.toDouble() + dailyStep.toString().toDouble()).toInt())
                     getDate()
 
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
@@ -176,7 +184,9 @@ class MainActivity : Activity() {
         infoBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, InfoActivity::class.java)
             intent.putExtra("point", countText!!.text)
+            intent.putExtra("step",  (serviceStepData.toDouble() + step.toString().toDouble()).toInt().toString())
             intent.putExtra("dailyPt", (dailyPt.toString().toInt() + serviceData.toInt()).toString())
+            intent.putExtra("dailyStep", (serviceStepData.toDouble() + dailyStep.toString().toDouble()).toInt().toString())
             if((dailyPt.toString().toInt() + serviceData.toInt()) > dayMaxPt.toString().toInt()) {
                 intent.putExtra("dayMaxPt", (dailyPt.toString().toInt() + serviceData.toInt()).toString())
                 database.child("info").child(path).child("dayMaxPt").setValue(dailyPt.toString().toInt() + serviceData.toInt())
@@ -195,7 +205,8 @@ class MainActivity : Activity() {
         shopBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, ShopActivity::class.java)
             intent.putExtra("shoes",shoes)
-            startActivity(intent)
+            intent.putExtra("money",money)
+            startActivityForResult(intent,1)
         }
 
         outBtn!!.setOnClickListener{
@@ -225,14 +236,14 @@ class MainActivity : Activity() {
     }
 
     val dateListener = object : ValueEventListener{
-        override fun onDataChange(p0: DataSnapshot?) {
-            Log.d("dateListener","exists(): " + p0!!.exists())
-            if(p0.exists()) {
+        override fun onDataChange(dataSnapshot: DataSnapshot?) {
+            Log.d("dateListener","exists(): " + dataSnapshot!!.exists())
+            if(dataSnapshot.exists()) {
                 val cal = Calendar.getInstance()
                 val formatter = DateFormat.getDateInstance()
                 formatter.timeZone = cal.timeZone
-                Log.d("dateListener","p0.value = " + p0.value.toString())
-                val dateStr = p0.value.toString()
+                Log.d("dateListener","p0.value = " + dataSnapshot.value.toString())
+                val dateStr = dataSnapshot.value.toString()
                 savedDate = simpleDateFormat.parse(dateStr)
                 Log.d("dateListener", "savedDate: " + savedDate.toString())
             } else {
@@ -246,10 +257,10 @@ class MainActivity : Activity() {
     }
 
     val dailyPtListener = object : ValueEventListener {
-        override fun onDataChange(p0: DataSnapshot?) {
-            if(p0 != null) {
-                if(p0.exists()) {
-                    dailyPt = p0.value!!
+        override fun onDataChange(dataSnapshot: DataSnapshot?) {
+            if(dataSnapshot != null) {
+                if(dataSnapshot.exists()) {
+                    dailyPt = dataSnapshot.value!!
                     if(dailyPt.toString().toInt() > dayMaxPt.toString().toInt()) dayMaxPt = dailyPt
                 } else {
                     DBinfoRef.child("dailyPt").setValue(0)
@@ -263,10 +274,10 @@ class MainActivity : Activity() {
     }
 
     val dayMaxPtListener = object : ValueEventListener {
-        override fun onDataChange(p0: DataSnapshot?) {
-            if(p0 != null) {
-                if(p0.exists()) {
-                    dayMaxPt = p0.value!!
+        override fun onDataChange(dataSnapshot: DataSnapshot?) {
+            if(dataSnapshot != null) {
+                if(dataSnapshot.exists()) {
+                    dayMaxPt = dataSnapshot.value!!
                 } else {
                     DBinfoRef.child("dayMaxPt").setValue(1)
                 }
@@ -312,8 +323,59 @@ class MainActivity : Activity() {
     }
 
     val ItemListener = object : ValueEventListener {
-        override fun onDataChange(p0: DataSnapshot?) {
+        override fun onDataChange(dataSnapshot: DataSnapshot?) {
+            if(dataSnapshot != null) {
+                if(dataSnapshot.exists()) {
+                    shoes = dataSnapshot.value.toString().toInt()
+                } else {
+                    DBinfoRef.child("shoes").setValue(0)
+                }
+            }
+        }
 
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+    }
+    val stepListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot?) {
+            if(dataSnapshot != null) {
+                if(dataSnapshot.exists()) {
+                    step = dataSnapshot.value!!
+                } else {
+                    DBinfoRef.child("step").setValue(0)
+                }
+            }
+        }
+
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+    }
+    val dailyStepListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot?) {
+            if(dataSnapshot != null) {
+                if(dataSnapshot.exists()) {
+                    dailyStep = dataSnapshot.value!!
+                } else {
+                    DBinfoRef.child("dailyStep").setValue(0)
+                }
+            }
+        }
+
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+    }
+    val moneyListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot?) {
+            if(dataSnapshot != null) {
+                if(dataSnapshot.exists()) {
+                    money = dataSnapshot.value.toString().toInt()
+                } else {
+                    DBinfoRef.child("dailyStep").setValue(0)
+                }
+            }
         }
 
         override fun onCancelled(p0: DatabaseError?) {
@@ -321,18 +383,39 @@ class MainActivity : Activity() {
         }
     }
 
-    private inner class PlayingReceiver : BroadcastReceiver() {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(resultCode != 1) {
+            Toast.makeText(this,"오류!",Toast.LENGTH_SHORT).show()
+            return
+        }
+        shoes = data!!.extras["shoes"].toString().toInt()
+        shoesAbility = ( shoes!! + 1 ) * 10
+    }
 
+    private inner class PlayingReceiver : BroadcastReceiver() {
+        var moneyGainCount = 3
         override fun onReceive(context: Context, intent: Intent) {
 
             val pointDB = FirebaseDatabase.getInstance().getReference("/user")
             pointDB.addListenerForSingleValueEvent(postListener)
 
             DBinfoRef.child("dailyPt").addListenerForSingleValueEvent(dailyPtListener)
+            DBinfoRef.child("step").addValueEventListener(stepListener)
+            DBinfoRef.child("dailyStep").addValueEventListener(dailyStepListener)
 
             Log.i("PlayignReceiver", "IN")
             serviceData = (intent.getStringExtra("stepService").toDouble() * shoesAbility!!).toInt().toString()
+            serviceStepData = intent.getStringExtra("stepService").toDouble().toInt().toString()
             countText!!.text = (serviceData.toInt() + point.toString().toInt()).toString()
+
+            moneyGainCount -= 1
+            if(moneyGainCount < 0) {
+                money ++
+                moneyGainCount = 3
+            }
+            DBinfoRef.child("money").setValue(money)
+            Log.d("money ", "moneyGainCount = $moneyGainCount money = $money")
             Log.i("test", "$serviceData $point $dailyPt")
         }
     }
