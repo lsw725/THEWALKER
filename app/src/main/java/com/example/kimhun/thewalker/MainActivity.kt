@@ -31,6 +31,7 @@ class MainActivity : Activity() {
     private var buddyBtn: Button? = null
     private var shopBtn: Button? = null
     private var outBtn: Button? = null
+    private var eventValue : Any = 0
     private lateinit var database : DatabaseReference
     private lateinit var mAuth: FirebaseAuth
     private lateinit var path:String
@@ -65,6 +66,7 @@ class MainActivity : Activity() {
         today = Date(now)
         DBinfoRef.child("today").addValueEventListener(dateListener)
         DBinfoRef.child("dayMaxPt").addValueEventListener(dayMaxPtListener)
+        DBinfoRef.child("event").addValueEventListener(eventListener)
         Timer().schedule(object : TimerTask(){
             override fun run() {
                 val todayStr = simpleDateFormat.format(today)
@@ -329,6 +331,7 @@ class MainActivity : Activity() {
             if(dataSnapshot != null) {
                 if(dataSnapshot.exists()) {
                     shoes = dataSnapshot.value.toString().toInt()
+                    shoesAbility = (shoes!! + 1) * 10
                 } else {
                     DBinfoRef.child("shoes").setValue(0)
                 }
@@ -377,6 +380,22 @@ class MainActivity : Activity() {
                 } else {
                     DBinfoRef.child("dailyStep").setValue(0)
                 }
+            }
+        }
+
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+    }
+
+    val eventListener = object : ValueEventListener {
+        override fun onDataChange(p0: DataSnapshot?) {
+            if(p0 != null) {
+                if (p0.exists()) {
+                    eventValue = p0.value!!
+                }
+            } else {
+                DBinfoRef.child("event").setValue(0)
             }
         }
 
