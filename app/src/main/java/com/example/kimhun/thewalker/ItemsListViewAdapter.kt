@@ -10,10 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -26,14 +23,13 @@ import java.util.*
 /**
  * Created by Hp on 2017-09-13.
  */
-class ItemsListViewAdapter(val context : Context?, val itemsList : ArrayList<ItemsListItem>) : BaseAdapter() {
+class ItemsListViewAdapter(val context : Context?, val itemsList : ArrayList<ItemsListItem>, val nowShoes : Int, val money : Int) : BaseAdapter() {
     private lateinit var mAuth: FirebaseAuth
     private var selectedPosition : Int = 0
 
     override fun getCount() = itemsList.size
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        //val context = parent?.context
         var view = convertView
 
         if(convertView == null) {
@@ -56,37 +52,34 @@ class ItemsListViewAdapter(val context : Context?, val itemsList : ArrayList<Ite
         costTextView.text = item.itemCost.toString() //item.getItemCost().toString()
         contextTextView.text = item.itemContext //item.getItemContext()
         buyButton.setOnClickListener{
-            mAuth = FirebaseAuth.getInstance()
-            val currentUser = mAuth.currentUser
-            val userId = currentUser!!.email
-            val index = userId!!.indexOf("@")
-            val path = userId.substring(0,index)
-            val DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
+            val alertDialogBuilder : AlertDialog.Builder = AlertDialog.Builder(context)
+            if (nowShoes >= position) {
+                alertDialogBuilder.setTitle("아이템 구매")
+                alertDialogBuilder.setMessage("이미 구매하셨습니다.").setCancelable(true)
+                alertDialogBuilder.show()
+            } else {
+                if (money >= itemsList[position].itemCost!!) {
+                    mAuth = FirebaseAuth.getInstance()
+                    val currentUser = mAuth.currentUser
+                    val userId = currentUser!!.email
+                    val index = userId!!.indexOf("@")
+                    val path = userId.substring(0, index)
+                    val DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
 
-            DBinfoRef.child("shoes").setValue(position)
-            val intent = Intent(context,ShopActivity::class.java)
-            intent.putExtra("shoes",position)
-            (context as Activity).setResult(1,intent)
-            context.finish()
-            Log.d("shoes","shoesPosition is " + position)
-
-            /*
-            var alertDialogBuilder : AlertDialog.Builder = AlertDialog.Builder(view!!.context)
-            alertDialogBuilder.setMessage(itemsList[position].getFriendName() + "님을 삭제 하시겠습니까?").setCancelable(false).setPositiveButton("확인",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        FirebaseDatabase.getInstance().getReference("/friends/" + path + "/" + itemsList[position].getFriendName()).removeValue()
-                        var intent = Intent(view!!.context, FriendsActivity::class.java)
-                        view!!.context.startActivity(intent)
-                        (context as Activity).finish()
-
-                    }).setNegativeButton("취소",
-                    DialogInterface.OnClickListener { dialog, which ->
-
-                    })
-            val alert = alertDialogBuilder.create()
-            alert.show()
-            */
-
+                    DBinfoRef.child("shoes").setValue(position)
+                    Toast.makeText(context,"${itemsList[position].itemName}을(를) 구매하셨습니다.",Toast.LENGTH_SHORT)
+                    val intent = Intent(context, ShopActivity::class.java)
+                    intent.putExtra("money", money - itemsList[position].itemCost!!)
+                    intent.putExtra("shoes", position)
+                    (context as Activity).setResult(1, intent)
+                    context.finish()
+                    Log.d("shoes", "shoesPosition is " + position)
+                } else {
+                    alertDialogBuilder.setTitle("아이템 구매")
+                    alertDialogBuilder.setMessage("돈이 부족합니다.").setCancelable(true)
+                    alertDialogBuilder.show()
+                }
+            }
         }
 
         return view
@@ -97,7 +90,7 @@ class ItemsListViewAdapter(val context : Context?, val itemsList : ArrayList<Ite
     }
 
     override fun getItemId(position: Int): Long {
-        return position as Long
+        return position.toLong()
     }
 
     fun addItem(image : Drawable, name : String, cost : Int, context : String, ability : Int) {

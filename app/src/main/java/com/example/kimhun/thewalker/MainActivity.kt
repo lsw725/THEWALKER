@@ -165,7 +165,9 @@ class MainActivity : Activity() {
                     database.child("info").child(path).child("dailyPt").setValue(serviceData.toInt() + dailyPt.toString().toInt())
                     database.child("info").child(path).child("dayMaxPt").setValue(dayMaxPt)
                     DBinfoRef.child("step").setValue((serviceStepData.toDouble() + step.toString().toDouble()).toInt())
+                    Log.d("helpme", serviceStepData + " " + step)
                     DBinfoRef.child("dailyStep").setValue((serviceStepData.toDouble() + dailyStep.toString().toDouble()).toInt())
+                    serviceStepData = 0.toString()
                     getDate()
 
                     // txtMsg.setText("After stoping Service:\n"+service.getClassName());
@@ -184,9 +186,9 @@ class MainActivity : Activity() {
         infoBtn!!.setOnClickListener{
             var intent : Intent = Intent(this, InfoActivity::class.java)
             intent.putExtra("point", countText!!.text)
-            intent.putExtra("step",  (serviceStepData.toDouble() + step.toString().toDouble()).toInt().toString())
+            intent.putExtra("step",  (step.toString().toDouble()).toInt().toString())
             intent.putExtra("dailyPt", (dailyPt.toString().toInt() + serviceData.toInt()).toString())
-            intent.putExtra("dailyStep", (serviceStepData.toDouble() + dailyStep.toString().toDouble()).toInt().toString())
+            intent.putExtra("dailyStep", (dailyStep.toString().toDouble()).toInt().toString())
             if((dailyPt.toString().toInt() + serviceData.toInt()) > dayMaxPt.toString().toInt()) {
                 intent.putExtra("dayMaxPt", (dailyPt.toString().toInt() + serviceData.toInt()).toString())
                 database.child("info").child(path).child("dayMaxPt").setValue(dailyPt.toString().toInt() + serviceData.toInt())
@@ -386,9 +388,9 @@ class MainActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(resultCode != 1) {
-            Toast.makeText(this,"오류!",Toast.LENGTH_SHORT).show()
             return
         }
+        money = data!!.extras["money"].toString().toInt()
         shoes = data!!.extras["shoes"].toString().toInt()
         shoesAbility = ( shoes!! + 1 ) * 10
     }
