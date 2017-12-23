@@ -7,9 +7,11 @@ import android.content.Intent
 import android.media.RingtoneManager
 import android.support.v4.app.NotificationCompat
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.RemoteMessage
-
-
+import java.util.*
 
 
 /**
@@ -17,6 +19,10 @@ import com.google.firebase.messaging.RemoteMessage
  */
 class FirebaseMessagingService : com.google.firebase.messaging.FirebaseMessagingService() {
     private val TAG = "FirebaseMsgService"
+
+    private lateinit var mAuth: FirebaseAuth
+    private lateinit var path:String
+    private lateinit var DBinfoRef : DatabaseReference
 
     private lateinit var msg:String
     override fun onMessageReceived(remoteMessage: RemoteMessage?) {
@@ -31,7 +37,20 @@ class FirebaseMessagingService : com.google.firebase.messaging.FirebaseMessaging
             Log.d(TAG, "Message Notification Body: " + remoteMessage.notification.body)
         }
 
+        mAuth = FirebaseAuth.getInstance()
+        val currentUser = mAuth.currentUser
+        val userId = currentUser!!.email
+        var index = userId!!.indexOf("@")
+        path = userId.substring(0,index)
+
         msg = remoteMessage.notification.body!!
+        if(msg == "FEVER"){
+            DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
+            DBinfoRef.child("event").setValue(1)
+        } else {
+            DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
+            DBinfoRef.child("event").setValue(0)
+        }
 
         var intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -44,13 +63,16 @@ class FirebaseMessagingService : com.google.firebase.messaging.FirebaseMessaging
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setVibrate(longArrayOf(1, 1000))
 
+        Timer().schedule(object : TimerTask(){
+            override fun run() {
+                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        notificationManager.notify(0 /* ID of notification */, mBuilder.build())
+                notificationManager.notify(0 /* ID of notification */, mBuilder.build())
 
 
-        mBuilder.setContentIntent(contentIntent)
+                mBuilder.setContentIntent(contentIntent)
+            }
+        }, 4000)
 
     }
 }

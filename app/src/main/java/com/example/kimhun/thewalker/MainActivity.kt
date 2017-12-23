@@ -407,7 +407,7 @@ class MainActivity : Activity() {
             DBinfoRef.child("dailyStep").addValueEventListener(dailyStepListener)
 
             Log.i("PlayignReceiver", "IN")
-            serviceData = (intent.getStringExtra("stepService").toDouble() * shoesAbility!!).toInt().toString()
+            serviceData = (intent.getStringExtra("stepService").toDouble() * shoesAbility!! * (eventValue.toString().toInt() + 1)).toInt().toString()
             serviceStepData = intent.getStringExtra("stepService").toDouble().toInt().toString()
             countText!!.text = (serviceData.toInt() + point.toString().toInt()).toString()
 

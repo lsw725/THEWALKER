@@ -136,6 +136,15 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     private fun updateUI(user: FirebaseUser?) {
         if (user != null) {
 
+            mAuth = FirebaseAuth.getInstance()
+            val currentUser = mAuth.currentUser
+            val userId = currentUser!!.email
+            var index = userId!!.indexOf("@")
+            path = userId.substring(0,index)
+            DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
+            DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
+            DBinfoRef.child("event").setValue(0)
+
             var intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
