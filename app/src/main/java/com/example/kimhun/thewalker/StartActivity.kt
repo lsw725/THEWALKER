@@ -30,7 +30,8 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
 
     private val RC_SIGN_IN = 9001
     private val TAG = "StartAcitivty"
-
+    private lateinit var path:String
+    private lateinit var DBinfoRef : DatabaseReference
     private lateinit var mAuth: FirebaseAuth
     private lateinit var mGoogleApiClient: GoogleApiClient
     private lateinit var database : DatabaseReference
@@ -141,7 +142,6 @@ class StartActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
             val userId = currentUser!!.email
             var index = userId!!.indexOf("@")
             path = userId.substring(0,index)
-            DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
             DBinfoRef = FirebaseDatabase.getInstance().getReference("/info/" + path)
             DBinfoRef.child("event").setValue(0)
 
