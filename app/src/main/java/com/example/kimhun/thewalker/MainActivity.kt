@@ -140,7 +140,7 @@ class MainActivity : Activity() {
             if (flag) {
                 // TODO Auto-generated method stub
 
-                playingBtn!!.text = "Go !!"
+                playingBtn!!.text = "Start!!"
                 try {
                     val mainFilter = IntentFilter("make.a.yong.manbo")
                     registerReceiver(receiver, mainFilter)
@@ -154,7 +154,7 @@ class MainActivity : Activity() {
 
             } else {
 
-                playingBtn!!.text = "Stop !!"
+                playingBtn!!.text = "Finish!!"
 
                 // TODO Auto-generated method stub
                 try {
@@ -162,7 +162,7 @@ class MainActivity : Activity() {
                     unregisterReceiver(receiver)
 
                     stopService(manboService)
-                    Toast.makeText(applicationContext, "Stop", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Point Recorded", Toast.LENGTH_SHORT).show()
                     database.child("user").child(path).setValue(serviceData.toInt() + point.toString().toInt())
                     database.child("info").child(path).child("dailyPt").setValue(serviceData.toInt() + dailyPt.toString().toInt())
                     database.child("info").child(path).child("dayMaxPt").setValue(dayMaxPt)
